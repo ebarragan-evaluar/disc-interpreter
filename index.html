@@ -320,7 +320,7 @@ input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3p
 
 <script>
 // ── CONFIG ─────────────────────────────────────────────
-var SCRIPT_URL = 'TU_URL_DEL_APPS_SCRIPT_AQUI';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2cK3ByWYn6HxMfZfsLRWu8AlS-mH6hXlphoXPxwe_1b_SQoWeHGoBoutVjB85Tmg/exec';
 
 // ── STATE ──────────────────────────────────────────────
 var st = {
@@ -421,7 +421,7 @@ async function handlePDF(file){
   document.getElementById('pdf-err').classList.add('hidden');
   var b64=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1])};r.onerror=rej;r.readAsDataURL(file)});
   try{
-    var resp=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'extractPDF',base64:b64})});
+    var resp=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',body:JSON.stringify({action:'extractPDF',base64:b64})});
     var data=await resp.json();
     if(!data.success) throw new Error(data.error||'Error');
     var d=data.data;
@@ -461,7 +461,7 @@ async function genAnalysis(){
   showStep('s-load');
   document.getElementById('dots').style.display='none';
   try{
-    var resp=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(
+    var resp=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',body:JSON.stringify(
       Object.assign({action:'generateAnalysis'},
         {nombre:st.nombre,empresa:st.empresa,pais:st.pais,purpose:st.purpose,
          arquetipo:st.arquetipo,intensidad:st.intensidad,D:st.D,I:st.I,S:st.S,C:st.C,
