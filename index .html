@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intérprete DISC · TH LATAM</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Source Sans 3',sans-serif;min-height:100vh;background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);color:#f0ede8;padding:24px 16px}
+.wrap{max-width:700px;margin:0 auto}
+.hdr{text-align:center;margin-bottom:28px}
+.hdr-sub{font-size:10px;letter-spacing:3px;color:#c9a96e;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-family:'Playfair Display',serif;font-size:32px;background:linear-gradient(135deg,#f0ede8,#c9a96e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.hdr p{color:rgba(240,237,232,0.5);font-size:13px}
+.dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:26px}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.18);transition:all .3s}
+.dot.on{width:13px;height:13px;background:#e8c87a;box-shadow:0 0 10px rgba(232,200,122,0.6)}
+.dot.done{background:#c9a96e}
+.dlbl{font-size:11px;color:rgba(240,237,232,0.35)}
+.dlbl.on{color:#e8c87a}
+.sep{width:20px;height:1px;background:rgba(255,255,255,0.12)}
+.card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:16px;backdrop-filter:blur(12px);padding:28px;margin-bottom:14px}
+.card-gold{background:rgba(201,169,110,0.08);border-color:rgba(201,169,110,0.3)}
+.step{display:none}
+.step.on{display:block;animation:fu .45s ease forwards}
+@keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.lbl{display:block;font-size:12px;letter-spacing:1px;color:rgba(201,169,110,0.8);text-transform:uppercase;margin-bottom:7px}
+input[type=text],select{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#f0ede8;padding:11px 14px;width:100%;font-size:14px;outline:none;font-family:'Source Sans 3',sans-serif}
+select option{background:#302b63;color:#f0ede8}
+input[type=text]::placeholder{color:rgba(240,237,232,0.35)}
+input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;outline:none;cursor:pointer}
+.btn{background:linear-gradient(135deg,#c9a96e,#e8c87a);color:#1a1525;border:none;border-radius:10px;padding:12px 24px;font-weight:700;cursor:pointer;font-size:14px;font-family:'Source Sans 3',sans-serif;letter-spacing:0.5px;transition:all .2s;width:100%}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(201,169,110,0.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btng{background:transparent;border:1px solid rgba(255,255,255,0.25);color:#f0ede8;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:14px;transition:all .2s}
+.btng:hover{background:rgba(255,255,255,0.1)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.brow{display:flex;gap:12px;margin-top:4px}
+.brow .btn{flex:1}
+.cc{cursor:pointer;padding:22px;border-radius:14px;border:2px solid transparent;background:rgba(255,255,255,0.05);text-align:center;transition:all .25s}
+.cc:hover{border-color:rgba(201,169,110,.5);background:rgba(201,169,110,.08)}
+.cc.sel{border-color:#c9a96e;background:rgba(201,169,110,.15)}
+.cc .ico{font-size:28px;margin-bottom:10px}
+.cc h3{font-family:'Playfair Display',serif;font-size:15px;margin-bottom:5px}
+.cc p{font-size:12px;color:rgba(240,237,232,0.5)}
+.tag{display:inline-block;padding:4px 11px;border-radius:20px;font-size:13px;margin:3px}
+.stitle{font-family:'Playfair Display',serif;font-size:16px;color:#c9a96e;margin-bottom:12px;border-bottom:1px solid rgba(201,169,110,0.25);padding-bottom:7px}
+.li{display:flex;gap:8px;margin-bottom:8px;font-size:14px;align-items:flex-start}
+.ci{background:rgba(255,255,255,0.05);border-left:3px solid #c9a96e;padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:8px}
+.ci-n{font-weight:600;font-size:14px;margin-bottom:2px}
+.ci-r{font-size:12px;color:rgba(240,237,232,0.55)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:60px;justify-content:center}
+.bwrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height .3s;min-height:4px}
+.pzone{border:2px dashed rgba(201,169,110,0.4);border-radius:12px;padding:28px;text-align:center;margin-bottom:16px;cursor:pointer;transition:all .2s}
+.pzone:hover{border-color:rgba(201,169,110,0.7);background:rgba(201,169,110,0.05)}
+@keyframes sp{to{transform:rotate(360deg)}}
+.spin{width:22px;height:22px;border:2px solid rgba(201,169,110,0.3);border-top-color:#c9a96e;border-radius:50%;animation:sp 1s linear infinite}
+.notif{background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);border-radius:10px;padding:12px 16px;font-size:13px;color:#2A9D8F;margin-top:12px}
+.notif.err{background:rgba(230,57,70,0.15);border-color:rgba(230,57,70,0.4);color:#E63946}
+.hidden{display:none!important}
+.pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pbar-lbl{width:12px;font-size:11px;font-weight:700;flex-shrink:0}
+.pbar-track{flex:1;height:7px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px;opacity:.8;transition:width .4s}
+.pbar-val{width:20px;font-size:11px;color:rgba(240,237,232,0.6);text-align:right;flex-shrink:0}
+.hero{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.3);border-radius:16px;padding:28px;text-align:center;margin-bottom:14px}
+.hero h2{font-family:'Playfair Display',serif;font-size:26px;background:linear-gradient(135deg,#f0ede8,#c9a96e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.cmp{background:rgba(69,123,157,0.08);border:1px solid rgba(69,123,157,0.3);border-radius:16px;padding:24px;margin-bottom:14px}
+.cmp .stitle{color:#7ab4d4;border-color:rgba(69,123,157,0.25)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-sub">Talento Humano · LATAM</div>
+  <h1>Intérprete DISC</h1>
+  <p>Análisis conductual con IA · Powered by Evaluar.com</p>
+</div>
+
+<!-- DOTS -->
+<div class="dots" id="dots">
+  <div class="dot on" id="d0"></div><span class="dlbl on" id="l0">Datos</span>
+  <div class="sep"></div>
+  <div class="dot" id="d1"></div><span class="dlbl" id="l1">Propósito</span>
+  <div class="sep"></div>
+  <div class="dot" id="d2"></div><span class="dlbl" id="l2">Perfil DISC</span>
+  <div class="sep"></div>
+  <div class="dot" id="d3"></div><span class="dlbl" id="l3">Contexto</span>
+</div>
+
+<!-- STEP 0: DATOS -->
+<div class="step on" id="s0">
+  <div class="card">
+    <h2 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">Datos del evaluado</h2>
+    <p style="color:rgba(240,237,232,0.55);font-size:13px;margin-bottom:24px">Este registro quedará en Google Sheets junto con el análisis</p>
+    <div style="margin-bottom:16px">
+      <label class="lbl">Nombre completo *</label>
+      <input type="text" id="inp-nombre" placeholder="Ej: Estefanía Barragán" oninput="st.nombre=this.value;chk0()">
+    </div>
+    <div class="g2" style="margin-bottom:24px">
+      <div>
+        <label class="lbl">Empresa *</label>
+        <input type="text" id="inp-empresa" placeholder="Ej: Evaluar S.A." oninput="st.empresa=this.value;chk0()">
+      </div>
+      <div>
+        <label class="lbl">País *</label>
+        <select id="inp-pais" onchange="st.pais=this.value;chk0()">
+          <option value="">— Seleccionar —</option>
+          <option>Ecuador</option><option>Colombia</option><option>Perú</option><option>México</option>
+          <option>Argentina</option><option>Chile</option><option>Brasil</option><option>Venezuela</option>
+          <option>Bolivia</option><option>Paraguay</option><option>Uruguay</option><option>Costa Rica</option>
+          <option>Panamá</option><option>Guatemala</option><option>Rep. Dominicana</option>
+          <option>España</option><option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" id="n0" onclick="go(1)" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- STEP 1: PROPÓSITO -->
+<div class="step" id="s1">
+  <div class="card">
+    <h2 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">¿Cuál es el propósito?</h2>
+    <p style="color:rgba(240,237,232,0.55);font-size:13px;margin-bottom:24px">Define el enfoque y las secciones del análisis</p>
+    <div class="g2" style="margin-bottom:26px">
+      <div class="cc" id="p-sel" onclick="selPurp('selection')">
+        <div class="ico">🎯</div><h3>Selección de Personal</h3>
+        <p>Incluye comparación Perfil Profesional vs Relacional</p>
+      </div>
+      <div class="cc" id="p-dev" onclick="selPurp('development')">
+        <div class="ico">🌱</div><h3>Desarrollo Organizacional</h3>
+        <p>Plan de crecimiento y potencial del colaborador</p>
+      </div>
+    </div>
+    <div class="brow">
+      <button class="btng" onclick="go(0)">← Atrás</button>
+      <button class="btn" id="n1" onclick="go(2)" disabled>Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: DISC -->
+<div class="step" id="s2">
+  <div class="card">
+    <h2 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">Perfil DISC</h2>
+    <p style="color:rgba(240,237,232,0.55);font-size:13px;margin-bottom:20px">Adjunta tu reporte o ingresa los datos manualmente</p>
+    <div class="g2" style="margin-bottom:20px">
+      <div class="cc" id="m-pdf" onclick="selMode('pdf')">
+        <div class="ico">📄</div><h3>Subir PDF</h3><p>Extracción automática de Evaluar.com</p>
+      </div>
+      <div class="cc" id="m-man" onclick="selMode('manual')">
+        <div class="ico">✏️</div><h3>Manual</h3><p>Arquetipo y puntajes</p>
+      </div>
+    </div>
+
+    <!-- PDF -->
+    <div id="sec-pdf" class="hidden">
+      <input type="file" id="finput" accept="application/pdf" style="display:none" onchange="handlePDF(this.files[0])">
+      <div class="pzone" onclick="document.getElementById('finput').click()">
+        <div id="pstatus">
+          <div style="font-size:28px;margin-bottom:8px">📤</div>
+          <div style="color:#c9a96e;font-size:14px">Haz clic o arrastra tu reporte DISC aquí</div>
+          <div style="font-size:12px;color:rgba(240,237,232,0.4);margin-top:4px">Compatible con Evaluar.com</div>
+        </div>
+      </div>
+      <div id="pdf-err" class="notif err hidden"></div>
+      <div id="pdf-ok" class="hidden" style="background:rgba(42,157,143,0.1);border:1px solid rgba(42,157,143,0.3);border-radius:10px;padding:14px;margin-bottom:8px">
+        <div style="font-size:12px;color:#2A9D8F;margin-bottom:8px;letter-spacing:.5px">DATOS EXTRAÍDOS</div>
+        <div id="pdf-tags"></div>
+      </div>
+    </div>
+
+    <!-- MANUAL -->
+    <div id="sec-man" class="hidden">
+      <div style="margin-bottom:16px">
+        <label class="lbl">Arquetipo DISC *</label>
+        <select id="sel-arq" onchange="selArq(this.value)">
+          <option value="">— Selecciona tu arquetipo —</option>
+          <option value="Dominante (D)|10|2|1|2">Dominante (D) — Directo, decisivo, orientado a resultados</option>
+          <option value="Orientador (Di)|10|7|0|0">Orientador (Di) — Extrovertido, influenciador, líder persuasivo</option>
+          <option value="Emprendedor (Dc)|10|2|0|6">Emprendedor (Dc) — Independiente, decidido, orientado a logro</option>
+          <option value="Motivador (Id)|5|10|2|1">Motivador (Id) — Entusiasta, dinámico, inspira y convence</option>
+          <option value="Influyente (I)|2|10|3|1">Influyente (I) — Sociable, optimista, comunicativo</option>
+          <option value="Consejero (Is)|1|8|6|1">Consejero (Is) — Empático, comunicativo, relacional</option>
+          <option value="Relacionador (Si)|1|5|10|2">Relacionador (Si) — Paciente, leal, confiable</option>
+          <option value="Estable (S)|1|2|10|3">Estable (S) — Paciente, consistente, cooperativo</option>
+          <option value="Defensor (Sc)|1|1|9|7">Defensor (Sc) — Metódico, paciente, muy preciso</option>
+          <option value="Especialista (Cs)|1|2|6|9">Especialista (Cs) — Experto, metódico, preciso</option>
+          <option value="Analítico (C)|2|1|3|10">Analítico (C) — Preciso, sistemático, investigador</option>
+          <option value="Perfeccionista (Cd)|5|1|2|10">Perfeccionista (Cd) — Preciso, exigente, alta calidad</option>
+          <option value="Persuasivo (dI)|4|10|2|2">Persuasivo (dI) — Carismático, influenciador</option>
+          <option value="Cauteloso (sC)|1|2|7|9">Cauteloso (sC) — Reflexivo, cuidadoso, estructurado</option>
+        </select>
+      </div>
+      <div style="margin-bottom:18px">
+        <label class="lbl">Intensidad del arquetipo: <span id="v-int">10</span>/10</label>
+        <input type="range" id="r-int" min="1" max="10" value="10" style="background:linear-gradient(to right,#c9a96e 100%,rgba(255,255,255,0.15) 100%)" oninput="updSlider('intensidad',this.value)">
+      </div>
+      <div class="g2" style="margin-bottom:16px">
+        <div><label class="lbl" style="color:#E63946">D — Dominancia: <span id="v-D">5</span></label>
+          <input type="range" id="r-D" min="0" max="10" value="5" style="background:linear-gradient(to right,#E63946 50%,rgba(255,255,255,0.15) 50%)" oninput="updSlider('D',this.value)"></div>
+        <div><label class="lbl" style="color:#F4A261">I — Influencia: <span id="v-I">5</span></label>
+          <input type="range" id="r-I" min="0" max="10" value="5" style="background:linear-gradient(to right,#F4A261 50%,rgba(255,255,255,0.15) 50%)" oninput="updSlider('I',this.value)"></div>
+        <div><label class="lbl" style="color:#2A9D8F">S — Servicio: <span id="v-S">5</span></label>
+          <input type="range" id="r-S" min="0" max="10" value="5" style="background:linear-gradient(to right,#2A9D8F 50%,rgba(255,255,255,0.15) 50%)" oninput="updSlider('S',this.value)"></div>
+        <div><label class="lbl" style="color:#457B9D">C — Cumplimiento: <span id="v-C">5</span></label>
+          <input type="range" id="r-C" min="0" max="10" value="5" style="background:linear-gradient(to right,#457B9D 50%,rgba(255,255,255,0.15) 50%)" oninput="updSlider('C',this.value)"></div>
+      </div>
+
+      <!-- Prof/Rel (solo selección) -->
+      <div id="sec-pr" class="hidden" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px">
+        <div style="font-size:12px;color:#c9a96e;letter-spacing:1px;margin-bottom:14px">PERFIL PROFESIONAL (autoreporte)</div>
+        <div class="g2" style="margin-bottom:16px">
+          <div><label class="lbl" style="color:#E63946">D: <span id="v-ppD">5</span></label>
+            <input type="range" id="r-ppD" min="0" max="10" value="5" style="background:linear-gradient(to right,#E63946 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfProf','D',this.value)"></div>
+          <div><label class="lbl" style="color:#F4A261">I: <span id="v-ppI">5</span></label>
+            <input type="range" id="r-ppI" min="0" max="10" value="5" style="background:linear-gradient(to right,#F4A261 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfProf','I',this.value)"></div>
+          <div><label class="lbl" style="color:#2A9D8F">S: <span id="v-ppS">5</span></label>
+            <input type="range" id="r-ppS" min="0" max="10" value="5" style="background:linear-gradient(to right,#2A9D8F 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfProf','S',this.value)"></div>
+          <div><label class="lbl" style="color:#457B9D">C: <span id="v-ppC">5</span></label>
+            <input type="range" id="r-ppC" min="0" max="10" value="5" style="background:linear-gradient(to right,#457B9D 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfProf','C',this.value)"></div>
+        </div>
+        <div style="font-size:12px;color:#457B9D;letter-spacing:1px;margin-bottom:14px">PERFIL RELACIONAL (percepción de otros)</div>
+        <div class="g2" style="margin-bottom:14px">
+          <div><label class="lbl" style="color:#E63946">D: <span id="v-prD">5</span></label>
+            <input type="range" id="r-prD" min="0" max="10" value="5" style="background:linear-gradient(to right,#E63946 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfRel','D',this.value)"></div>
+          <div><label class="lbl" style="color:#F4A261">I: <span id="v-prI">5</span></label>
+            <input type="range" id="r-prI" min="0" max="10" value="5" style="background:linear-gradient(to right,#F4A261 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfRel','I',this.value)"></div>
+          <div><label class="lbl" style="color:#2A9D8F">S: <span id="v-prS">5</span></label>
+            <input type="range" id="r-prS" min="0" max="10" value="5" style="background:linear-gradient(to right,#2A9D8F 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfRel','S',this.value)"></div>
+          <div><label class="lbl" style="color:#457B9D">C: <span id="v-prC">5</span></label>
+            <input type="range" id="r-prC" min="0" max="10" value="5" style="background:linear-gradient(to right,#457B9D 50%,rgba(255,255,255,0.15) 50%)" oninput="updPR('perfRel','C',this.value)"></div>
+        </div>
+        <div><label class="lbl">Similitud: <span id="v-sim">5</span>/10</label>
+          <input type="range" id="r-sim" min="0" max="10" value="5" style="background:linear-gradient(to right,#c9a96e 50%,rgba(255,255,255,0.15) 50%)" oninput="updSlider('similitud',this.value)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visual bars -->
+  <div class="card" style="padding:16px;margin-bottom:14px">
+    <div style="font-size:11px;color:rgba(240,237,232,0.5);margin-bottom:10px;text-align:center;letter-spacing:1px">PERFIL VISUAL</div>
+    <div class="bars">
+      <div class="bwrap"><div class="bar" id="bar-D" style="background:#E63946;height:27px"></div><span style="font-size:12px;font-weight:700;color:#E63946">D</span><span style="font-size:11px;color:#E63946" id="bv-D">5</span></div>
+      <div class="bwrap"><div class="bar" id="bar-I" style="background:#F4A261;height:27px"></div><span style="font-size:12px;font-weight:700;color:#F4A261">I</span><span style="font-size:11px;color:#F4A261" id="bv-I">5</span></div>
+      <div class="bwrap"><div class="bar" id="bar-S" style="background:#2A9D8F;height:27px"></div><span style="font-size:12px;font-weight:700;color:#2A9D8F">S</span><span style="font-size:11px;color:#2A9D8F" id="bv-S">5</span></div>
+      <div class="bwrap"><div class="bar" id="bar-C" style="background:#457B9D;height:27px"></div><span style="font-size:12px;font-weight:700;color:#457B9D">C</span><span style="font-size:11px;color:#457B9D" id="bv-C">5</span></div>
+    </div>
+  </div>
+  <div class="brow">
+    <button class="btng" onclick="go(1)">← Atrás</button>
+    <button class="btn" id="n2" onclick="go(3)" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- STEP 3: CONTEXTO -->
+<div class="step" id="s3">
+  <div class="card">
+    <h2 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">Contexto laboral</h2>
+    <p style="color:rgba(240,237,232,0.55);font-size:13px;margin-bottom:20px">Personaliza el análisis según sector y cargo</p>
+    <div style="margin-bottom:16px">
+      <label class="lbl">Industria *</label>
+      <select id="inp-ind" onchange="st.industry=this.value;chk3()">
+        <option value="">— Selecciona la industria —</option>
+        <option>Tecnología y Software</option><option>Banca y Servicios Financieros</option>
+        <option>Salud y Farmacéutica</option><option>Retail y Consumo Masivo</option>
+        <option>Manufactura e Industria</option><option>Educación</option>
+        <option>Consultoría y Servicios Profesionales</option><option>Logística y Supply Chain</option>
+        <option>Telecomunicaciones</option><option>Energía y Recursos Naturales</option>
+        <option>Construcción e Inmobiliaria</option><option>Gobierno y Sector Público</option>
+        <option>Medios y Entretenimiento</option><option>Agroindustria</option>
+        <option>Startups y Emprendimiento</option><option>ONG y Tercer Sector</option>
+      </select>
+    </div>
+    <div style="margin-bottom:20px">
+      <label class="lbl">Cargo actual o de referencia</label>
+      <input type="text" id="inp-role" placeholder="Ej: Gerente Comercial, Analista de TH..." oninput="st.role=this.value">
+    </div>
+    <!-- Resumen -->
+    <div class="card card-gold" style="padding:16px;margin-bottom:20px">
+      <div style="font-size:11px;color:#c9a96e;letter-spacing:1px;margin-bottom:10px">RESUMEN</div>
+      <div id="sum-tags" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div class="bars" style="height:50px" id="sum-bars">
+        <div class="bwrap"><div class="bar" id="sb-D" style="background:#E63946;height:27px"></div><span style="font-size:10px;font-weight:700;color:#E63946">D</span></div>
+        <div class="bwrap"><div class="bar" id="sb-I" style="background:#F4A261;height:27px"></div><span style="font-size:10px;font-weight:700;color:#F4A261">I</span></div>
+        <div class="bwrap"><div class="bar" id="sb-S" style="background:#2A9D8F;height:27px"></div><span style="font-size:10px;font-weight:700;color:#2A9D8F">S</span></div>
+        <div class="bwrap"><div class="bar" id="sb-C" style="background:#457B9D;height:27px"></div><span style="font-size:10px;font-weight:700;color:#457B9D">C</span></div>
+      </div>
+    </div>
+    <div id="gen-err" class="notif err hidden" style="margin-bottom:12px"></div>
+    <div class="brow">
+      <button class="btng" onclick="go(2)">← Atrás</button>
+      <button class="btn" id="n3" onclick="genAnalysis()" disabled>✦ Generar Análisis</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="step" id="s-load">
+  <div class="card" style="text-align:center;padding:48px">
+    <div class="spin" style="margin:0 auto 16px"></div>
+    <h3 style="font-family:'Playfair Display',serif;color:#c9a96e;margin-bottom:8px">Analizando perfil...</h3>
+    <p style="color:rgba(240,237,232,0.55);font-size:13px">La IA está interpretando tu perfil DISC</p>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="step" id="s-res">
+  <div id="res-content"></div>
+  <button class="btng" style="width:100%;padding:14px;margin-bottom:24px" onclick="resetApp()">↺ Nueva Evaluación</button>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2cK3ByWYn6HxMfZfsLRWu8AlS-mH6hXlphoXPxwe_1b_SQoWeHGoBoutVjB85Tmg/exec';
+
+// ── STATE ──────────────────────────────────────────────
+var st = {
+  nombre:'',empresa:'',pais:'',
+  purpose:null, mode:null,
+  arquetipo:'',intensidad:10,
+  D:5,I:5,S:5,C:5,
+  perfProf:{D:5,I:5,S:5,C:5},
+  perfRel:{D:5,I:5,S:5,C:5},
+  similitud:5,energia:'Activo',enfoque:'Personas',decisiones:'Arriesgado',
+  industry:'',role:'',
+  pdfDone:false
+};
+var C = {D:'#E63946',I:'#F4A261',S:'#2A9D8F',C:'#457B9D'};
+
+// ── NAVIGATION ─────────────────────────────────────────
+function go(n) {
+  document.querySelectorAll('.step').forEach(function(s){s.classList.remove('on')});
+  document.getElementById('s'+n).classList.add('on');
+  for(var i=0;i<4;i++){
+    document.getElementById('d'+i).className='dot'+(i===n?' on':i<n?' done':'');
+    document.getElementById('l'+i).className='dlbl'+(i===n?' on':'');
+  }
+  if(n===3) updSummary();
+  window.scrollTo(0,0);
+}
+function showStep(id){
+  document.querySelectorAll('.step').forEach(function(s){s.classList.remove('on')});
+  document.getElementById(id).classList.add('on');
+}
+
+// ── STEP 0 ─────────────────────────────────────────────
+function chk0(){document.getElementById('n0').disabled=!(st.nombre.trim()&&st.empresa.trim()&&st.pais);}
+
+// ── STEP 1 ─────────────────────────────────────────────
+function selPurp(p){
+  st.purpose=p;
+  document.getElementById('p-sel').classList.toggle('sel',p==='selection');
+  document.getElementById('p-dev').classList.toggle('sel',p==='development');
+  document.getElementById('n1').disabled=false;
+  if(st.mode==='manual') document.getElementById('sec-pr').classList.toggle('hidden',p!=='selection');
+}
+
+// ── STEP 2 ─────────────────────────────────────────────
+function selMode(m){
+  st.mode=m;
+  document.getElementById('m-pdf').classList.toggle('sel',m==='pdf');
+  document.getElementById('m-man').classList.toggle('sel',m==='manual');
+  document.getElementById('sec-pdf').classList.toggle('hidden',m!=='pdf');
+  document.getElementById('sec-man').classList.toggle('hidden',m!=='manual');
+  if(m==='manual') document.getElementById('sec-pr').classList.toggle('hidden',st.purpose!=='selection');
+  chk2();
+}
+function selArq(v){
+  if(!v) return;
+  var p=v.split('|');
+  st.arquetipo=p[0];
+  st.D=+p[1];st.I=+p[2];st.S=+p[3];st.C=+p[4];
+  ['D','I','S','C'].forEach(function(k){
+    document.getElementById('r-'+k).value=st[k];
+    updSlider(k,st[k]);
+  });
+  chk2();
+}
+function updSlider(k,v){
+  v=parseInt(v); st[k]=v;
+  var lm={D:'v-D',I:'v-I',S:'v-S',C:'v-C',intensidad:'v-int',similitud:'v-sim'};
+  if(lm[k]) document.getElementById(lm[k]).textContent=v;
+  var col=C[k]||(k==='intensidad'||k==='similitud'?'#c9a96e':null);
+  var slider=document.getElementById('r-'+k);
+  if(slider&&col){var pct=v*10;slider.style.background='linear-gradient(to right,'+col+' '+pct+'%,rgba(255,255,255,0.15) '+pct+'%)';}
+  if(C[k]){
+    var bar=document.getElementById('bar-'+k);
+    if(bar) bar.style.height=(v*5.5)+'px';
+    var bv=document.getElementById('bv-'+k);
+    if(bv) bv.textContent=v;
+    var sb=document.getElementById('sb-'+k);
+    if(sb) sb.style.height=(v*4.5)+'px';
+  }
+  chk2();
+}
+function updPR(prof,k,v){
+  v=parseInt(v); st[prof][k]=v;
+  var pfx=prof==='perfProf'?'pp':'pr';
+  document.getElementById('v-'+pfx+k).textContent=v;
+  var pct=v*10;
+  document.getElementById('r-'+pfx+k).style.background='linear-gradient(to right,'+C[k]+' '+pct+'%,rgba(255,255,255,0.15) '+pct+'%)';
+}
+function chk2(){
+  var ok=(st.mode==='pdf'&&st.pdfDone)||(st.mode==='manual'&&st.arquetipo);
+  document.getElementById('n2').disabled=!ok;
+}
+
+async function handlePDF(file){
+  if(!file) return;
+  var ps=document.getElementById('pstatus');
+  ps.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:10px;color:#c9a96e"><div class="spin" style="width:18px;height:18px;margin:0"></div>Extrayendo datos del PDF...</div>';
+  document.getElementById('pdf-err').classList.add('hidden');
+  var b64=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1])};r.onerror=rej;r.readAsDataURL(file)});
+  try{
+    var resp=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',body:JSON.stringify({action:'extractPDF',base64:b64})});
+    var data=await resp.json();
+    if(!data.success) throw new Error(data.error||'Error');
+    var d=data.data;
+    Object.assign(st,{arquetipo:d.arquetipo||'',intensidad:d.intensidad||10,D:d.D||5,I:d.I||5,S:d.S||5,C:d.C||5,
+      perfProf:d.perfProf||{D:5,I:5,S:5,C:5},perfRel:d.perfRel||{D:5,I:5,S:5,C:5},
+      similitud:d.similitud||5,energia:d.energia||'Activo',enfoque:d.enfoque||'Personas',decisiones:d.decisiones||'Arriesgado',pdfDone:true});
+    if(d.nombreEvaluado&&!st.nombre){st.nombre=d.nombreEvaluado;document.getElementById('inp-nombre').value=d.nombreEvaluado;}
+    ps.innerHTML='<div style="color:#2A9D8F">✓ Datos extraídos — '+st.arquetipo+' ('+st.intensidad+'/10)</div>';
+    var tags=document.getElementById('pdf-tags');
+    tags.innerHTML=['D','I','S','C'].map(function(k){return'<span class="tag" style="background:'+C[k]+'22;border:1px solid '+C[k]+'55;color:'+C[k]+'">'+k+': '+st[k]+'/10</span>';}).join('')+
+      '<span class="tag" style="background:rgba(255,255,255,0.08);color:rgba(240,237,232,0.7);font-size:12px">'+st.arquetipo+' · '+st.intensidad+'/10</span>';
+    document.getElementById('pdf-ok').classList.remove('hidden');
+    ['D','I','S','C'].forEach(function(k){var b=document.getElementById('bar-'+k);if(b)b.style.height=(st[k]*5.5)+'px';});
+    chk2();
+  }catch(e){
+    var er=document.getElementById('pdf-err');
+    er.textContent='No se pudo leer el PDF. Intenta con modo manual.';
+    er.classList.remove('hidden');
+    ps.innerHTML='<div style="font-size:28px;margin-bottom:8px">📤</div><div style="color:#c9a96e;font-size:14px">Intenta con otro archivo</div>';
+  }
+}
+
+// ── STEP 3 ─────────────────────────────────────────────
+function chk3(){document.getElementById('n3').disabled=!st.industry;}
+function updSummary(){
+  document.getElementById('sum-tags').innerHTML=
+    '<span style="font-size:14px;color:rgba(240,237,232,0.8)">'+st.nombre+' · '+st.empresa+'</span>'+
+    '<span class="tag" style="background:rgba(255,255,255,0.08);color:rgba(240,237,232,0.5);font-size:11px">'+st.pais+'</span>'+
+    '<span class="tag" style="background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.4);color:#c9a96e;font-size:12px">'+(st.arquetipo||'Arquetipo')+'</span>'+
+    '<span class="tag" style="background:rgba(255,255,255,0.06);color:rgba(240,237,232,0.5);font-size:11px">'+(st.purpose==='selection'?'🎯 Selección':'🌱 Desarrollo')+'</span>';
+  ['D','I','S','C'].forEach(function(k){var b=document.getElementById('sb-'+k);if(b)b.style.height=(st[k]*4.5)+'px';});
+}
+
+// ── GENERATE ───────────────────────────────────────────
+async function genAnalysis(){
+  document.getElementById('gen-err').classList.add('hidden');
+  showStep('s-load');
+  document.getElementById('dots').style.display='none';
+  try{
+    var resp=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',body:JSON.stringify(
+      Object.assign({action:'generateAnalysis'},
+        {nombre:st.nombre,empresa:st.empresa,pais:st.pais,purpose:st.purpose,
+         arquetipo:st.arquetipo,intensidad:st.intensidad,D:st.D,I:st.I,S:st.S,C:st.C,
+         perfProf:st.perfProf,perfRel:st.perfRel,similitud:st.similitud,
+         energia:st.energia,enfoque:st.enfoque,decisiones:st.decisiones,
+         industry:st.industry,role:st.role})
+    )});
+    var data=await resp.json();
+    if(!data.success) throw new Error(data.error||'Error en el análisis');
+    renderResults(data.data,data.data.sheetUrl);
+    showStep('s-res');
+  }catch(e){
+    document.getElementById('dots').style.display='flex';
+    go(3);
+    var er=document.getElementById('gen-err');
+    er.textContent='Error: '+e.message+'. Verifica la URL del Apps Script en el código.';
+    er.classList.remove('hidden');
+  }
+}
+
+// ── RENDER RESULTS ─────────────────────────────────────
+function li(arr,color){return(arr||[]).map(function(x){return'<div class="li"><span style="color:'+color+';margin-top:1px;flex-shrink:0">▸</span><span style="color:rgba(240,237,232,0.85)">'+x+'</span></div>';}).join('');}
+function tags(arr,bg,border,color){return(arr||[]).map(function(t){return'<span class="tag" style="background:'+bg+';border:1px solid '+border+';color:'+color+'">'+t+'</span>';}).join('');}
+
+function renderResults(r,sheetUrl){
+  var d=st;
+  var discTags=['D','I','S','C'].map(function(k){return'<span class="tag" style="background:'+C[k]+'22;border:1px solid '+C[k]+'55;color:'+C[k]+';font-weight:700">'+k+' '+d[k]+'/10</span>';}).join('');
+  var cargos=(r.cargos_alineados||[]).map(function(c){return'<div class="ci"><div class="ci-n">'+c.cargo+'</div><div class="ci-r">'+c.razon+'</div></div>';}).join('');
+
+  var html=
+    '<div class="hero">'+
+      '<div style="font-size:10px;letter-spacing:3px;color:#c9a96e;margin-bottom:6px">PERFIL CONDUCTUAL — '+d.arquetipo.toUpperCase()+'</div>'+
+      '<h2>'+r.resumen_perfil+'</h2>'+
+      '<div style="font-size:13px;color:rgba(240,237,232,0.5);margin-bottom:14px">'+d.nombre+' · '+d.empresa+' · '+d.pais+'</div>'+
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">'+discTags+
+        '<span class="tag" style="background:rgba(255,255,255,0.08);color:rgba(240,237,232,0.6);font-size:12px">⚡ Intensidad '+d.intensidad+'/10</span></div>'+
+      '<p style="color:rgba(240,237,232,0.82);line-height:1.75;font-size:14px">'+r.estilo_natural+'</p>'+
+    '</div>'+
+    '<div class="g2">'+
+      '<div class="card"><div class="stitle">💪 Fortalezas Clave</div>'+li(r.fortalezas_clave,'#c9a96e')+'</div>'+
+      '<div class="card"><div class="stitle">⚠️ Riesgos y Cuidados</div>'+li(r.riesgos_y_cuidados,'#E63946')+'</div>'+
+    '</div>'+
+    '<div class="g2">'+
+      '<div class="card"><div class="stitle">🔥 Motivadores</div>'+li(r.motivadores,'#F4A261')+'</div>'+
+      '<div class="card"><div class="stitle">🔽 Desmotivadores</div>'+li(r.desmotivadores,'#457B9D')+'</div>'+
+    '</div>'+
+    '<div class="card"><div class="stitle">⚡ Tareas en las que Destaca</div><div style="display:flex;flex-wrap:wrap;gap:8px">'+tags(r.tareas_en_que_destaca,'rgba(42,157,143,0.15)','rgba(42,157,143,0.35)','#2A9D8F')+'</div></div>'+
+    '<div class="card"><div class="stitle">🎯 Cargos Alineados — '+d.industry+'</div>'+cargos+'</div>'+
+    '<div class="card"><div class="stitle">🚀 Proyectos con Alto Potencial</div><div style="display:flex;flex-wrap:wrap;gap:8px">'+tags(r.proyectos_potenciales,'rgba(69,123,157,0.15)','rgba(69,123,157,0.35)','#7ab4d4')+'</div></div>'+
+    '<div class="card"><div class="stitle">🛋️ Zona de Confort y Entorno Ideal</div><p style="color:rgba(240,237,232,0.82);line-height:1.75;font-size:14px">'+r.zona_de_confort+'</p></div>'+
+    '<div class="g2">'+
+      '<div class="card"><div class="stitle">📚 Cómo Aprende</div>'+li(r.como_aprende,'#c9a96e').replace(/▸/g,'◈')+'</div>'+
+      '<div class="card"><div class="stitle">💬 Cómo Comunicarse</div>'+li(r.como_comunicarse,'#F4A261').replace(/▸/g,'◈')+'</div>'+
+    '</div>'+
+    '<div class="card" style="background:rgba(244,162,97,0.07);border-color:rgba(244,162,97,0.2)">'+
+      '<div class="stitle" style="color:#F4A261;border-color:rgba(244,162,97,0.25)">🔄 Dinámica Interna del Perfil</div>'+
+      '<p style="color:rgba(240,237,232,0.82);line-height:1.75;font-size:14px">'+r.dinamica_interna+'</p>'+
+    '</div>';
+
+  // Comparación Prof vs Rel (solo selección)
+  if(d.purpose==='selection'&&r.comparacion_perfiles){
+    var cp=r.comparacion_perfiles;
+    var simColor=d.similitud>=7?'#2A9D8F':d.similitud>=4?'#F4A261':'#E63946';
+    var profBars=function(data,color){return['D','I','S','C'].map(function(k){return'<div class="pbar-row"><span class="pbar-lbl" style="color:'+C[k]+'">'+k+'</span><div class="pbar-track"><div class="pbar-fill" style="width:'+((data[k]||0)*10)+'%;background:'+color+'"></div></div><span class="pbar-val">'+(data[k]||0)+'</span></div>';}).join('');};
+    html+=
+      '<div class="cmp">'+
+        '<div class="stitle">📊 Perfil Profesional vs Perfil Relacional</div>'+
+        '<div class="g2" style="margin-bottom:14px">'+
+          '<div><div style="font-size:11px;color:#7ab4d4;letter-spacing:1px;margin-bottom:10px">PROFESIONAL</div>'+profBars(d.perfProf,'#7ab4d4')+'</div>'+
+          '<div><div style="font-size:11px;color:#F4A261;letter-spacing:1px;margin-bottom:10px">RELACIONAL</div>'+profBars(d.perfRel,'#F4A261')+'</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px">'+
+          '<span style="font-size:12px;color:rgba(240,237,232,0.5)">Similitud:</span>'+
+          '<div style="flex:1;height:7px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden"><div style="width:'+(d.similitud*10)+'%;height:100%;background:'+simColor+';border-radius:3px"></div></div>'+
+          '<span style="font-size:13px;font-weight:700;color:'+simColor+'">'+d.similitud+'/10</span>'+
+        '</div>'+
+        '<p style="color:rgba(240,237,232,0.82);line-height:1.7;font-size:13px;margin-bottom:10px">'+cp.similitud_interpretacion+'</p>'+
+        (cp.diferencias_clave&&cp.diferencias_clave.length?
+          '<div style="font-size:11px;color:rgba(240,237,232,0.45);margin-bottom:6px;letter-spacing:.5px">DIFERENCIAS CLAVE</div>'+li(cp.diferencias_clave,'#7ab4d4'):'')+''+
+        '<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;margin-top:10px">'+
+          '<div style="font-size:11px;color:#c9a96e;margin-bottom:6px;letter-spacing:.5px">IMPLICACIÓN PARA SELECCIÓN</div>'+
+          '<p style="color:rgba(240,237,232,0.82);line-height:1.7;font-size:13px;margin-bottom:10px">'+cp.implicacion_seleccion+'</p>'+
+          '<div style="font-size:11px;color:#2A9D8F;margin-bottom:6px;letter-spacing:.5px">FIT CULTURAL — '+d.industry+'</div>'+
+          '<p style="color:rgba(240,237,232,0.82);line-height:1.7;font-size:13px;margin:0">'+cp.fit_cultural+'</p>'+
+        '</div>'+
+      '</div>';
+  }
+
+  html+=
+    '<div class="card card-gold">'+
+      '<div class="stitle">✦ Recomendación Final — '+(d.purpose==='selection'?'Selección':'Desarrollo')+'</div>'+
+      '<p style="color:rgba(240,237,232,0.88);line-height:1.8;font-size:14px">'+r.recomendacion_final+'</p>'+
+    '</div>'+
+    '<div class="card" style="text-align:center;padding:20px">'+
+      (sheetUrl?
+        '<div class="notif" style="margin:0">✓ Registro guardado en Google Sheets · <a href="'+sheetUrl+'" target="_blank" style="color:#c9a96e;text-decoration:underline">Abrir hoja →</a></div>':
+        '<p style="color:rgba(240,237,232,0.55);font-size:13px">Análisis guardado en "Registro DISC Evaluaciones" en tu Google Drive</p>')+
+    '</div>';
+
+  document.getElementById('res-content').innerHTML=html;
+}
+
+// ── RESET ──────────────────────────────────────────────
+function resetApp(){
+  Object.assign(st,{nombre:'',empresa:'',pais:'',purpose:null,mode:null,arquetipo:'',intensidad:10,
+    D:5,I:5,S:5,C:5,perfProf:{D:5,I:5,S:5,C:5},perfRel:{D:5,I:5,S:5,C:5},
+    similitud:5,pdfDone:false,industry:'',role:''});
+  ['inp-nombre','inp-empresa','inp-pais','inp-ind','inp-role','sel-arq'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  ['p-sel','p-dev','m-pdf','m-man'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('sel');});
+  ['sec-pdf','sec-man','pdf-ok','sec-pr'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.add('hidden');});
+  ['n0','n1','n2','n3'].forEach(function(id){document.getElementById(id).disabled=true;});
+  document.getElementById('dots').style.display='flex';
+  go(0);
+}
+</script>
+</body>
+</html>
