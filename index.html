@@ -472,8 +472,7 @@ async function handlePDF(file) {
     for (var i=1;i<=pdf.numPages;i++) {
       var page = await pdf.getPage(i);
       var tc = await page.getTextContent();
-      text += tc.items.map(function(item){return item.str;}).join(' ') + '
-';
+      text += tc.items.map(function(item){return item.str;}).join(' ') + '\n';
     }
     ps.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;color:#E91E8C;font-weight:600"><span class="spin" style="width:18px;height:18px"></span>Interpretando con IA...</div>';
     var resp = await fetch(SCRIPT_URL, {method:'POST', redirect:'follow', body:JSON.stringify({action:'extractPDFText', text:text.substring(0,8000)})});
